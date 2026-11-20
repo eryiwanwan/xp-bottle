@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>瓶子视觉系统 · 预览</title>
+<style>
+  :root{
+    --paper:#F7F4EE; --surface:#FFFFFF; --ink:#1F1D1A; --ink2:#6B665D; --ink3:#A9A296;
+    --line:rgba(31,29,26,.12); --accent:#993556;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:48px 24px 80px}
+  h1{font-size:30px;font-weight:500;letter-spacing:-.5px;margin:0 0 6px}
+  .sub{color:var(--ink2);font-size:14px;margin:0 0 40px}
+  h2{font-size:17px;font-weight:500;margin:44px 0 6px;letter-spacing:-.2px}
+  h2 span{font-weight:400;color:var(--ink3);font-size:13px;margin-left:8px}
+  .lead{color:var(--ink2);font-size:13.5px;margin:0 0 18px;max-width:640px}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .row{display:flex;align-items:flex-end;gap:6px;border-bottom:1px solid var(--line);padding:10px 0}
+  .row:last-child{border-bottom:none}
+  .row .nm{width:78px;font-size:12.5px;color:var(--ink2);flex:none;padding-bottom:26px}
+  .cell{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .cell i{font-style:normal;font-size:11px;color:var(--ink3)}
+  .head{display:flex;gap:6px;padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:4px}
+  .head .nm{width:78px;flex:none;font-size:11px;color:var(--ink3);letter-spacing:.08em}
+  .head .cell{font-size:11px;color:var(--ink3);letter-spacing:.08em}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:500;color:var(--ink3);font-size:12px;letter-spacing:.06em}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;background:#F1EDE4;padding:1px 5px;border-radius:4px}
+  pre{background:#F1EDE4;padding:14px 16px;border-radius:10px;overflow:auto;font-size:12.5px;line-height:1.7;margin:10px 0 0}
+  .note{font-size:13px;color:var(--ink2);border-left:2px solid var(--accent);padding-left:12px;margin:16px 0 0}
+  .sw{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+  .sw div{font-size:12px;color:var(--ink2)}
+  .sw b{display:block;width:46px;height:26px;border-radius:5px;margin-bottom:5px;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>瓶子视觉系统</h1>
+  <p class="sub">13 种瓶型 × 4 个档位 · 全部是矢量 SVG，一个文件 12KB，能跟着页面缩放，也能直接拼进海报导出。</p>
+
+  <h2>一、瓶型 × 液面矩阵</h2>
+  <p class="lead">同一个坐标系里画完：100 × 140 的瓶身，瓶口在顶部。液体高度按 34% / 66% / 100% 三档，雷区是虚线轮廓加叉，不灌液。</p>
+  <div class="panel" id="matrix"></div>
+
+  <h2>二、词条怎么挑瓶型<span>靠形状说话，不靠画得细</span></h2>
+  <p class="lead">规矩只有一条：<b>瓶型和词条要在同一个语义上</b>。绳缚给横纹，项圈给环，笼子给竖栏，滴蜡给顶部流挂。用户扫一眼不用读字就知道大概是什么类别。</p>
+  <table>
+    <thead><tr><th style="width:84px">瓶型</th><th style="width:96px">形状特征</th><th>适合的词条类别</th></tr></thead>
+    <tbody>
+      <tr><td><code>round</code> 圆瓶</td><td>大圆肩</td><td>亲密、被看着、镜子前、唾液这类"人和人之间"的</td></tr>
+      <tr><td><code>square</code> 方瓶</td><td>直肩直身</td><td>言语、掌掴、被踩、强制暴露这类"硬边"的</td></tr>
+      <tr><td><code>flask</code> 烧瓶</td><td>锥形宽底</td><td>道具、玩具、寸止、多人这类"要倒很多"的</td></tr>
+      <tr><td><code>tall</code> 长瓶</td><td>细高</td><td>场景、制服、契约、编号这类"形式感"的</td></tr>
+      <tr><td><code>rope</code> 绳瓶</td><td>方瓶 + 三道斜纹</td><td>手腕被绑、全身绳缚、悬吊、全身固定</td></tr>
+      <tr><td><code>belt</code> 带瓶</td><td>方瓶 + 束带与扣</td><td>皮带与束带、打屁股、鞭痕</td></tr>
+      <tr><td><code>collar</code> 环瓶</td><td>圆瓶 + 颈环</td><td>听命令、跪着等、项圈、宠物化、交出决定权</td></tr>
+      <tr><td><code>cage</code> 笼瓶</td><td>方瓶 + 竖栏</td><td>贞操控制、笼子、排泄控制、长期贞操</td></tr>
+      <tr><td><code>wax</code> 蜡瓶</td><td>烧瓶 + 顶部流挂</td><td>冰与蜡、滴蜡到留痕</td></tr>
+      <tr><td><code>bolt</code> 电瓶</td><td>长瓶 + 折线</td><td>掐脖、呼吸控制、电击、针刺、永久标记</td></tr>
+      <tr><td><code>feather</code> 羽瓶</td><td>圆瓶 + 羽轴</td><td>羽毛轻触、事后照料、足部、气味、喂食</td></tr>
+      <tr><td><code>mask</code> 罩瓶</td><td>圆瓶 + 横带</td><td>蒙眼、口塞、角色扮演、感官剥夺、睡梦中</td></tr>
+      <tr><td><code>tent</code> 触手瓶</td><td>烧瓶 + 两侧卷须</td><td>留给你自己的怪词条，尤其是"说不清但就是有"的那种</td></tr>
+    </tbody>
+  </table>
+  <p class="note">现在 13 种已经能覆盖 65 个词条不重样。要扩到 15–20 种，不用重画骨架，加 <code>EXTRAS</code> 里一个函数就行——一个函数大约 8 行，五分钟一个。</p>
+
+  <h2>三、颜色与档位</h2>
+  <div class="panel">
+    <div class="sw">
+      <div><b style="background:#C9C4B8"></b>雷区 #C9C4B8 虚线</div>
+      <div><b style="background:#F4C0D1"></b>好奇 #F4C0D1</div>
+      <div><b style="background:#D4537E"></b>喜欢 #D4537E</div>
+      <div><b style="background:#993556"></b>满溢 #993556</div>
+      <div><b style="background:#3A3733"></b>线稿 #3A3733</div>
+      <div><b style="background:#FAF7F2"></b>纸面 #FAF7F2</div>
+    </div>
+    <p class="note">四档只用一条色相、四个明度，不做彩虹。因为瓶子多的时候，颜色一多就变成噪音，"满溢的那几瓶"反而看不见了——而满溢的那几瓶，才是这张图真正想让人看的东西。</p>
+  </div>
+
+  <h2>四、要不要用 AI 生图<span>我的结论：不要做主线</span></h2>
+  <p class="lead">你原本想要"每个词条一只手绘瓶"。AI 生图能做，但在这个产品里代价很高：风格在 35 张之间会漂、导出的图带底色和白边、体积从 12KB 变成 8MB、还不能跟着档位变化（同一张图要 4 个液面版本 = 140 张）。用矢量才能做到"一个词条一只瓶，液面实时变"。</p>
+  <p class="lead">AI 只适合做一件事：<b>出草图给你照着改成 path</b>。真要这么用，prompt 是这样：</p>
+  <div class="panel">
+<pre>line art icon, single bottle, thick uniform 3px stroke, #3A3733 on pure white,
+no shading, no gradient, no text, no shadow, flat 2D, straight-on view,
+silhouette readable at 48px, centered, generous padding,
+subject: a glass bottle whose body is wrapped by three diagonal ropes</pre>
+    <p class="note">要求它"能看清轮廓"而不是"好看"，因为在 48px 的卡片角上，细节全都会消失，只剩轮廓。</p>
+  </div>
+
+  <h2>五、代码怎么用</h2>
+  <p class="lead">全部逻辑在 <code>bottle.js</code>，两个函数就够：</p>
+  <div class="panel">
+<pre>// 拿一段可以直接塞进 &lt;svg&gt; 的瓶子（用于海报拼接）
+Bottle.mark('rope', 4)
+
+// 拿一个独立的小瓶子（用于卡片预览、列表）
+Bottle.tag('rope', 4, 46)</pre>
+  </div>
+</div>
+
+<script src="bottle.js"></script>
+<script>
+(function () {
+  var forms = [
+    ["round", "圆瓶"], ["square", "方瓶"], ["flask", "烧瓶"], ["tall", "长瓶"],
+    ["rope", "绳瓶"], ["belt", "带瓶"], ["collar", "环瓶"], ["cage", "笼瓶"],
+    ["wax", "蜡瓶"], ["bolt", "电瓶"], ["feather", "羽瓶"], ["mask", "罩瓶"], ["tent", "触手瓶"]
+  ];
+  var heads = ["未答", "雷区", "好奇", "喜欢", "满溢"];
+  var html = '<div class="head"><div class="nm">瓶型</div>';
+  heads.forEach(function (h) { html += '<div class="cell">' + h + '</div>'; });
+  html += "</div>";
+
+  forms.forEach(function (f) {
+    html += '<div class="row"><div class="nm">' + f[1] + " · " + f[0] + "</div>";
+    [0, 1, 2, 3, 4].forEach(function (lv) {
+      html += '<div class="cell">' + Bottle.tag(f[0], lv, 54) + "<i>" + lv + "</i></div>";
+    });
+    html += "</div>";
+  });
+  document.getElementById("matrix").innerHTML = html;
+})();
+</script>
+</body>
+</html>

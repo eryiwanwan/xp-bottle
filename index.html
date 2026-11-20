@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F7F4EE">
+<title>小妈的性癖之瓶</title>
+<style>
+  :root{
+    --paper:#F7F4EE; --surface:#FFFFFF; --ink:#1F1D1A; --ink2:#6B665D; --ink3:#A9A296;
+    --line:rgba(31,29,26,.12); --line2:rgba(31,29,26,.22);
+    --accent:#993556; --pink:#D4537E; --red:#A32D2D;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+    overscroll-behavior:none;
+  }
+  .screen{display:none;min-height:100dvh;flex-direction:column}
+  .screen.on{display:flex}
+  .wrap{width:100%;max-width:520px;margin:0 auto;padding:0 20px}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  .pill{
+    border:1px solid var(--line2);border-radius:999px;padding:11px 20px;background:var(--surface);
+    font-size:15px;transition:transform .12s ease, background .12s ease;
+  }
+  .pill:active{transform:scale(.97)}
+  .pill.solid{background:var(--ink);color:#FBF8F2;border-color:var(--ink)}
+  .pill.ghost{border-color:transparent;color:var(--ink2);background:transparent;padding:11px 12px}
+
+  /* 选词表 */
+  #pick .wrap{margin:auto}
+  .pk-t{font-size:26px;font-weight:500;letter-spacing:-.3px;margin:0 0 6px}
+  .pk-s{color:var(--ink2);font-size:14px;margin:0 0 22px}
+  .decks{display:grid;gap:10px;grid-template-columns:1fr;margin-bottom:10px}
+  .deck{
+    display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);
+    border-radius:14px;padding:16px 18px;transition:border-color .15s;
+  }
+  .deck:active{border-color:var(--line2)}
+  .deck b{font-weight:500;font-size:17px;display:block;margin-bottom:3px}
+  .deck span{color:var(--ink2);font-size:13px}
+  .deck em{float:right;color:var(--ink3);font-style:normal;font-size:13px;margin-top:2px}
+  .deck.sel{border-color:var(--ink)}
+  .glabel{font-size:11px;color:var(--ink3);letter-spacing:.14em;margin-bottom:10px}
+  #role .wrap{padding-top:28px;padding-bottom:28px}
+  #role .pk-t{margin-bottom:6px}
+  .grow{display:flex;gap:8px;flex-wrap:wrap}
+  .gchip{border:1px solid var(--line2);background:var(--surface);border-radius:999px;padding:8px 18px;font-size:14px;color:var(--ink2);transition:background .12s,color .12s,border-color .12s}
+  .gchip.on{background:var(--ink);color:#FBF8F2;border-color:var(--ink)}
+  #roleStart{width:100%;margin-top:16px;padding:14px 0;font-size:15px}
+  #roleStart:disabled{opacity:.32}
+
+  /* 刷卡 */
+  .bar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 0;max-width:520px;margin:0 auto;width:100%}
+  .bar .c{font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .prog{height:2px;background:var(--line);margin:10px 20px 0;max-width:480px;border-radius:2px;overflow:hidden}
+  .prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s ease}
+  .stage{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%;max-width:520px;margin:0 auto;padding:0 20px}
+
+  .pour{display:flex;align-items:center;gap:12px;height:86px;margin-bottom:6px}
+  .pour .b{width:46px;height:64px;display:flex;align-items:flex-end;justify-content:center}
+  .pour .t{font-size:13px;color:var(--ink3);min-width:132px;transition:color .12s}
+
+  .cardwrap{position:relative;width:100%;display:flex;justify-content:center}
+  .card{
+    width:100%;max-width:340px;min-height:296px;background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:26px 22px;touch-action:none;user-select:none;-webkit-user-select:none;
+    will-change:transform;transition:transform .18s ease;
+  }
+  .card.drag{transition:none}
+  .cat{font-size:12px;color:var(--ink3);letter-spacing:.06em;border:1px solid var(--line);border-radius:999px;padding:3px 11px;margin-bottom:24px}
+  .word{font-size:40px;font-weight:500;letter-spacing:-1px;line-height:1.2;text-align:center}
+  .note{font-size:12px;color:var(--ink3);margin-top:14px;text-align:center;max-width:230px;line-height:1.5}
+  .hint{font-size:12px;color:var(--ink3);text-align:center;margin:22px 0 0;line-height:1.7}
+  .btns{display:flex;gap:8px;padding:16px 20px 30px;width:100%;max-width:520px;margin:0 auto}
+  .btns .pill{flex:1;padding:13px 0;text-align:center;font-size:14px}
+  .btns .yes{background:#FBEAF0;border-color:#E7B9C6;color:var(--accent)}
+  .btns .no{color:var(--ink2)}
+
+  /* 结果 */
+  .resh{padding:26px 20px 10px;max-width:520px;margin:0 auto;width:100%}
+  .resh h1{font-size:22px;font-weight:500;margin:0 0 4px;letter-spacing:-.2px}
+  .resh p{margin:0;font-size:13px;color:var(--ink2)}
+  .posterwrap{flex:1;padding:8px 20px 0;max-width:520px;margin:0 auto;width:100%;display:flex;justify-content:center}
+  .posterwrap svg{width:100%;height:auto;border-radius:14px;border:1px solid var(--line);display:block}
+  .nick{width:100%;max-width:300px;margin-top:10px;border:none;border-bottom:1px solid var(--line2);
+    background:transparent;padding:7px 2px;font:inherit;font-size:14px;color:var(--ink);outline:none}
+  .nick:focus{border-color:var(--accent)}
+  .nick::placeholder{color:var(--ink3)}
+  .saveov{position:fixed;inset:0;background:rgba(250,247,242,.97);z-index:200;display:flex;
+    flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px}
+  .saveov p{font-size:14px;color:var(--ink2);margin:0}
+  .saveov img{max-width:88%;max-height:62vh;border-radius:10px;border:1px solid var(--line)}
+  .racts{display:flex;gap:10px;padding:18px 20px 30px;max-width:520px;margin:0 auto;width:100%;flex-wrap:wrap}
+  .racts .pill{flex:1 1 44%;text-align:center;padding:13px 0;font-size:14px}
+
+  /* 封面 */
+  #gate{display:none}
+  #gate.on{display:flex;flex-direction:column}
+  .cover-art{flex:1;display:flex;align-items:center;justify-content:center;padding:26px 20px 0;min-height:170px;pointer-events:none}
+  .cover-art svg{width:min(78vw,400px);height:auto;max-height:100%}
+  .cover-body{position:relative;padding:0 24px 28px;max-width:520px;margin:0 auto;width:100%;flex:none;text-align:center}
+  .cover-k{font-size:11px;letter-spacing:.26em;text-indent:.26em;color:var(--ink3);margin-bottom:10px}
+  .cover-t{font-size:33px;line-height:1.24;font-weight:500;letter-spacing:-.8px;margin:0 0 15px}
+  .cover-p{font-size:13.5px;color:var(--ink2);margin:0 auto 9px;line-height:1.78;max-width:400px}
+  .cover-acts{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center}
+  .credit{margin-top:20px;font-size:12px;color:var(--ink3);display:inline-flex;align-items:center;gap:8px;text-decoration:none;line-height:1}
+  .credit .xmark{width:17px;height:17px;border-radius:4px;background:var(--ink);color:#FAF7F2;font-size:11px;line-height:17px;text-align:center;font-weight:500}
+  .credit b{font-weight:400;color:var(--ink2)}
+
+  /* 类型卡 */
+  .typecard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:16px auto 0;width:calc(100% - 40px);max-width:480px}
+  .tc-pos{font-size:11px;letter-spacing:.14em;color:var(--ink3);margin-bottom:6px}
+  .tc-name{font-size:25px;font-weight:500;letter-spacing:-.5px;line-height:1.3}
+  .tc-d{font-size:14px;color:var(--ink2);margin:8px 0 0;line-height:1.7}
+  .bars{margin:16px 0 2px;display:grid;gap:9px}
+  .bar-row{display:grid;grid-template-columns:32px 1fr 30px;align-items:center;gap:10px;font-size:11.5px;color:var(--ink2)}
+  .bar-row .tr{height:4px;background:#EDE8DE;border-radius:2px;overflow:hidden}
+  .bar-row .tr i{display:block;height:100%;background:var(--accent)}
+  .bar-row b{font-weight:400;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink3)}
+  .tc-pit{font-size:13px;color:var(--accent);margin:14px 0 0;line-height:1.65}
+  .tips{margin:12px 0 0;padding:0;list-style:none}
+  .tips li{font-size:13px;color:var(--ink2);padding-left:14px;position:relative;margin-bottom:7px;line-height:1.65}
+  .tips li:before{content:"";position:absolute;left:0;top:8px;width:4px;height:4px;border-radius:50%;background:var(--ink3)}
+  .tc-fine{font-size:11.5px;color:var(--ink3);margin:14px 0 0;line-height:1.6;border-top:1px solid var(--line);padding-top:12px}
+
+  /* 对撞 */
+  .m-in{width:100%;border:1px solid var(--line2);border-radius:12px;padding:12px 14px;font-size:13px;font-family:inherit;background:var(--surface);resize:vertical;min-height:66px;color:var(--ink);outline:none}
+  .m-in:focus{border-color:var(--accent)}
+  .score{font-size:62px;font-weight:500;letter-spacing:-3px;line-height:1.05;font-variant-numeric:tabular-nums}
+  .score small{font-size:16px;letter-spacing:0;color:var(--ink3);margin-left:2px}
+  .grp{margin-top:20px}
+  .grp h3{font-size:12px;font-weight:500;margin:0 0 9px;color:var(--ink3);letter-spacing:.06em}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+  .chip.ok{background:#FBEAF0;border-color:#EBC3CF;color:var(--accent)}
+  .chip.no{background:#FCEBEB;border-color:#F3C9C9;color:var(--red)}
+  .chip.mid{background:#F2EEE5;border-color:#E2DCD1;color:var(--ink2)}
+  .toast{
+    position:fixed;left:50%;bottom:40px;transform:translate(-50%,20px);background:var(--ink);color:#FBF8F2;
+    padding:10px 18px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:all .25s;z-index:99;
+  }
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  /* ---------- 自适应 ---------- */
+  html{-webkit-text-size-adjust:100%}
+  .prog{margin-left:auto;margin-right:auto;width:calc(100% - 40px)}
+  .btns{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+  .racts{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+  @media (hover:hover){ .card{cursor:grab} .card.drag{cursor:grabbing} }
+
+  /* iPad 竖屏及更大的手机横屏 */
+  @media (min-width:700px){
+    .wrap,.bar,.prog,.stage,.btns,.resh,.racts,.posterwrap{max-width:600px}
+    .decks{grid-template-columns:1fr 1fr}
+    .deck{padding:18px 20px}
+    .card{max-width:400px;min-height:330px}
+    .word{font-size:46px}
+    .cover-t{font-size:38px}
+    .typecard{max-width:560px}
+    .btns .pill{padding:15px 0}
+  }
+
+  /* 桌面与 iPad 横屏 */
+  @media (min-width:1024px){
+    body{font-size:15.5px}
+    #gate.on{flex-direction:row;align-items:center;justify-content:center;gap:60px;padding:0 48px}
+    .cover-art{flex:0 1 470px;padding:0;min-height:0}
+    .cover-art svg{width:100%;max-height:64vh}
+    .cover-body{flex:0 1 400px;margin:0;padding:0}
+    .cover-t{font-size:40px}
+    .credit{font-size:13px}
+
+    .bar,.stage{max-width:780px}
+    .prog{max-width:740px}
+    .card{max-width:460px;min-height:370px}
+    .word{font-size:54px}
+    .cat{margin-bottom:28px}
+
+    #result.on{display:grid;grid-template-columns:minmax(0,540px) 400px;
+      grid-template-rows:auto auto 1fr;gap:0 40px;justify-content:center;
+      padding:24px 32px 0;align-items:start}
+    .resh{grid-column:1 / -1;grid-row:1;max-width:none;padding:0 0 16px}
+    .posterwrap{grid-column:1;grid-row:2 / 4;max-width:none;padding:0;justify-content:flex-start}
+    .posterwrap svg{max-width:540px}
+    .typecard{grid-column:2;grid-row:2;margin:0;width:100%;max-width:none}
+    .racts{grid-column:2;grid-row:3;max-width:none;padding:16px 0 44px;align-self:start}
+    .racts .pill{flex:1 1 46%}
+
+    #match .wrap{max-width:780px}
+    .m-in{min-height:84px}
+  }
+
+  @media (min-width:1440px){
+    .cover-art{flex:0 1 560px}
+    .cover-body{flex:0 1 430px}
+  }
+
+  /* 手机横屏 / 矮窗口 */
+  @media (max-height:560px){
+    .card{min-height:0;padding:18px 16px}
+    .word{font-size:30px}
+    .cat{margin-bottom:14px}
+    .pour{height:62px;margin-bottom:0}
+    .hint{margin-top:12px}
+    .cover-art{flex:0 0 30vh;min-height:0;padding-top:10px}
+    .cover-art svg{max-height:28vh;width:auto}
+    .cover-t{font-size:25px;margin-bottom:9px}
+    .cover-p{font-size:12.5px;margin-bottom:6px;line-height:1.6}
+    .cover-acts{margin-top:14px;padding-bottom:8px}
+    .credit{margin-top:12px}
+  }
+</style>
+</head>
+<body>
+
+<!-- 封面 / 18+ 门 -->
+<section id="gate" class="screen on">
+  <div class="cover-art"><div id="coverArt"></div></div>
+  <div class="cover-body">
+    <div class="cover-k">18+ · 成人内容</div>
+    <h1 class="cover-t">小妈的<br>性癖之瓶</h1>
+    <p class="cover-p">35 张卡。左滑不行，右滑想要，上划跳过。</p>
+    <p class="cover-p">别想太久，第一反应比斟酌准。</p>
+    <div class="cover-acts">
+      <button class="pill solid" id="gateYes">我已满 18 岁，进入</button>
+      <button class="pill ghost" id="gateNo">离开</button>
+    </div>
+    <a class="credit" href="https://x.com/eryiwanwan" target="_blank" rel="noopener noreferrer">
+      <span>制作者：</span><span class="xmark" title="X（推特）">X</span><span>小妈不是妈</span><b>@eryiwanwan</b>
+    </a>
+  </div>
+</section>
+
+<!-- 选词表 -->
+<section id="pick" class="screen">
+  <div class="wrap">
+    <h1 class="pk-t">挑一套词表</h1>
+    <p class="pk-s">每套都是一瓶。刷完直接出图。</p>
+    <div class="decks">
+      <button class="deck" data-deck="basic"><em>35 项</em><b>基础篇</b><span>第一次做选这套 · 约 90 秒</span></button>
+      <button class="deck" data-deck="deep"><em>30 项</em><b>BDSM 篇</b><span>明确一点的 · 约 80 秒</span></button>
+      <button class="deck" data-deck="fem"><em>30 项</em><b>女性向篇</b><span>重氛围和言语 · 约 80 秒</span></button>
+    </div>
+    <p class="pk-s" style="margin-top:22px;font-size:12px;color:var(--ink3);line-height:1.7">
+      向左拖是不行，拖得越远越「不行」；向右拖是想要，拖得越远越想要。往上划是跳过。<br>跳过的不会出现在瓶子上。
+    </p>
+  </div>
+</section>
+
+<!-- 位置 + 性别 -->
+<section id="role" class="screen">
+  <div class="wrap">
+    <h1 class="pk-t">先定两个坐标</h1>
+    <p class="pk-s">性别只影响图上的标注，位置决定最后给你的那个说法。</p>
+
+    <div class="glabel">你是</div>
+    <div class="grow" id="genderRow">
+      <button class="gchip" data-g="f">女</button>
+      <button class="gchip" data-g="m">男</button>
+      <button class="gchip" data-g="x">其他</button>
+      <button class="gchip on" data-g="n">不说</button>
+    </div>
+
+    <div class="glabel" style="margin-top:24px">这一瓶，你从哪个位置答</div>
+    <div class="decks">
+      <button class="deck" data-role="dom"><b>主导</b><span>你通常是安排的那一方</span></button>
+      <button class="deck" data-role="sub"><b>服从</b><span>你通常是被安排的那一方</span></button>
+      <button class="deck" data-role="switch"><b>两边都行</b><span>看人、看场合，位置会换</span></button>
+      <button class="deck" data-role="fantasy"><b>只是想想</b><span>目前都还在脑子里，还没打算实现</span></button>
+    </div>
+
+    <button class="pill solid" id="roleStart" disabled>开始刷</button>
+    <div style="margin-top:8px;text-align:center"><button class="pill ghost" id="roleBack">返回</button></div>
+  </div>
+</section>
+
+<!-- 刷卡 -->
+<section id="play" class="screen">
+  <div class="bar">
+    <button class="pill ghost" id="btnBack">返回</button>
+    <div class="c" id="cnt">1 / 35</div>
+    <button class="pill ghost" id="btnUndo">撤销</button>
+  </div>
+  <div class="prog"><i id="pbar"></i></div>
+  <div class="stage">
+    <div class="pour">
+      <div class="b"><div id="prevBottle"></div></div>
+      <div class="t" id="prevLabel">向右拖，决定灌注多少</div>
+    </div>
+    <div class="cardwrap">
+      <div class="card" id="card">
+        <div class="cat" id="cat">感官</div>
+        <div class="word" id="word">蒙眼</div>
+        <div class="note" id="note"></div>
+      </div>
+    </div>
+    <p class="hint">左滑越远越「不行」：轻拖是抵触，拖到底是雷区<br>右滑越远越想要 · 上划跳过</p>
+  </div>
+  <div class="btns">
+    <button class="pill no" data-act="no">雷区</button>
+    <button class="pill" data-act="rel">抵触</button>
+    <button class="pill" data-act="skip">跳过</button>
+    <button class="pill yes" data-act="yes">想要</button>
+  </div>
+</section>
+
+<!-- 结果 -->
+<section id="result" class="screen">
+  <div class="resh">
+    <h1 id="resTitle">你的瓶子</h1>
+    <p id="resSub"></p>
+    <input class="nick" id="nick" maxlength="12" autocomplete="off" placeholder="填个昵称，会印在图上（可选）">
+  </div>
+  <div class="posterwrap"><div id="posterBox" style="width:100%"></div></div>
+  <div class="typecard" id="typecard"></div>
+  <div class="racts">
+    <button class="pill" id="btnSave">保存图片</button>
+    <button class="pill" id="btnCopy">复制链接</button>
+    <button class="pill" id="btnMatch">两瓶对撞</button>
+    <button class="pill" id="btnAgain">再来一瓶</button>
+  </div>
+</section>
+
+<!-- 对撞 -->
+<section id="match" class="screen">
+  <div class="bar">
+    <button class="pill ghost" id="mBack">返回</button>
+    <div class="c">两瓶对撞</div>
+    <div style="width:44px"></div>
+  </div>
+  <div class="wrap" style="padding-top:18px">
+    <p class="pk-s" style="margin-bottom:14px">把对方的链接粘进来。答案都在链接里，对方不用注册，你也不用联网。</p>
+    <textarea class="m-in" id="mInput" placeholder="https://…/#basic.2.ndq3k8f2m1"></textarea>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="pill solid" id="mRun" style="flex:1">开始对撞</button>
+      <button class="pill" id="mMine">复制我的链接</button>
+    </div>
+    <div id="mOut"></div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="bottle.js"></script>
+<script src="types.js"></script>
+<script src="match.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var DECKS = {
+    basic: {
+      key: "basic", name: "基础篇",
+      items: [
+        ["亲吻与深吻", "亲密", "round"], ["蒙眼", "感官", "mask"], ["耳边低语", "言语", "round"],
+        ["被抱到发疼", "亲密", "round"], ["被叫「好孩子」", "言语", "round"], ["被骂、被贬低", "言语", "square"],
+        ["听命令照做", "权力", "collar"], ["手腕被绑", "束缚", "rope"], ["全身绳缚", "束缚", "rope"],
+        ["皮带与束带", "道具", "belt"], ["口塞", "感官", "mask"], ["打屁股", "调教", "belt"],
+        ["掌掴", "调教", "square"], ["掐脖", "边缘", "bolt"], ["抓头发", "支配", "round"],
+        ["跪着等", "权力", "collar"], ["被踩、被压住", "支配", "square"], ["项圈与牵引", "权力", "collar"],
+        ["冰与蜡", "感官", "wax"], ["羽毛与轻触", "感官", "feather"], ["情趣玩具", "道具", "flask"],
+        ["穿戴着出门", "场景", "tall"], ["寸止", "调教", "flask"], ["强制高潮", "调教", "flask"],
+        ["贞操控制", "权力", "cage"], ["角色扮演", "场景", "mask"], ["制服", "场景", "tall"],
+        ["镜子前", "场景", "round"], ["被拍下来", "场景", "square"], ["半公开的场合", "场景", "tall"],
+        ["脏话与荤话", "言语", "square"], ["被看着", "展示", "round"], ["三个人以上", "多人", "flask"],
+        ["无套", "亲密", "round"], ["事后照料", "照料", "feather"]
+      ]
+    },
+    deep: {
+      key: "deep", name: "BDSM 篇",
+      items: [
+        ["全身固定", "束缚", "rope"], ["悬吊", "束缚", "rope"],
+        ["呼吸控制", "边缘", "bolt", "风险项 · 需要安全词和在场的人"],
+        ["协商式非自愿", "权力", "mask", "只作为幻想和协商框架"],
+        ["羞辱与物化", "言语", "square"], ["当作家具", "权力", "cage"],
+        ["被踩在脚下", "支配", "square"], ["针刺", "边缘", "bolt"], ["电击", "边缘", "bolt"],
+        ["滴蜡到留痕", "感官", "wax"], ["鞭痕", "调教", "belt"], ["笼子 · 拘禁", "束缚", "cage"],
+        ["感官全剥夺", "感官", "mask"], ["排泄控制", "权力", "cage"], ["喂食", "照料", "feather"],
+        ["宠物化", "权力", "collar"], ["编号与计数", "权力", "tall"], ["书面契约", "权力", "tall"],
+        ["公开支配", "展示", "collar"], ["交换伴侣", "多人", "flask"], ["看着对方被别人", "多人", "round"],
+        ["多人支配", "多人", "flask"],
+        ["睡梦中被使用", "边缘", "mask", "需要事先明确同意"],
+        ["唾液", "感官", "round"], ["足部", "感官", "feather"], ["气味", "感官", "feather"],
+        ["强制暴露", "展示", "square"], ["长期贞操", "权力", "cage"],
+        ["永久标记的幻想", "边缘", "bolt", "仅限幻想，不落地"],
+        ["完全交出决定权", "权力", "collar"]
+      ]
+    },
+    fem: {
+      key: "fem", name: "女性向篇",
+      items: [
+        ["被认真地看着", "展示", "round"],
+        ["被夸好看", "言语", "round"],
+        ["慢一点的吻", "亲密", "round"],
+        ["被抱着不放", "亲密", "round"],
+        ["在耳边说话", "言语", "round"],
+        ["被记住喜好", "照料", "feather"],
+        ["有个称呼", "言语", "collar"],
+        ["被安排一整晚", "权力", "tall"],
+        ["蒙眼", "感官", "mask"],
+        ["手腕被握住", "束缚", "rope"],
+        ["丝巾绑缚", "束缚", "rope"],
+        ["被压在墙上", "支配", "square"],
+        ["头发被抓住", "支配", "round"],
+        ["颈部被轻握", "边缘", "bolt"],
+        ["掌心落在屁股上", "调教", "belt"],
+        ["蜡烛的温度", "感官", "wax"],
+        ["冰块", "感官", "wax"],
+        ["羽毛扫过", "感官", "feather"],
+        ["情趣内衣", "场景", "tall"],
+        ["制服", "场景", "tall"],
+        ["镜子前", "场景", "round"],
+        ["被拍下来", "场景", "square"],
+        ["酒店房间", "场景", "tall"],
+        ["医生与病人", "场景", "mask"],
+        ["玩具", "道具", "flask"],
+        ["寸止", "调教", "flask"],
+        ["被命令不许动", "权力", "cage"],
+        ["说出想要", "言语", "square"],
+        ["事后被抱着", "照料", "feather"],
+        ["被看着睡着", "照料", "round"]
+      ]
+    }
+  };
+
+  var S = { deck: "basic", i: 0, ans: [], hist: [], t0: 0, dur: "", view: false,
+            role: "", gender: "n", type: null, link: "", nick: "" };
+  var RI = { dom: 0, sub: 1, switch: 2, fantasy: 3 };
+  var RI_back = ["dom", "sub", "switch", "fantasy"];
+  var $ = function (id) { return document.getElementById(id); };
+
+  function show(name) {
+    ["gate", "pick", "role", "play", "result", "match"].forEach(function (n) {
+      $(n).classList.toggle("on", n === name);
+    });
+    window.scrollTo(0, 0);
+  }
+
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("on");
+    clearTimeout(t._h);
+    t._h = setTimeout(function () { t.classList.remove("on"); }, 1900);
+  }
+
+  /* ---------- 封面 ---------- */
+  var BRAND = "小妈的性癖之瓶";
+  var CREDIT = "制作者：X · 小妈不是妈 @eryiwanwan";
+
+  (function cover() {
+    var spec = [
+      [200, 1.22, 5, "round"],
+      [124, 0.82, 4, "flask"],
+      [276, 0.82, 3, "collar"],
+      [66, 0.58, 4, "cage"],
+      [334, 0.58, 3, "belt"],
+      [26, 0.42, 3, "mask"],
+      [374, 0.42, 4, "tent"]
+    ].sort(function (a, b) { return a[1] - b[1]; });
+
+    var s = '<svg viewBox="0 76 400 214" xmlns="http://www.w3.org/2000/svg">';
+    s += '<line x1="14" y1="272" x2="386" y2="272" stroke="#E4DED2" stroke-width="1"/>';
+    spec.forEach(function (b) {
+      var sc = b[1];
+      s += '<g transform="translate(' + (b[0] - 50 * sc) + "," + (272 - 140 * sc) + ") scale(" + sc + ')">' +
+        Bottle.mark(b[3], b[2]) + "</g>";
+    });
+    s += "</svg>";
+    var box = document.getElementById("coverArt");
+    if (box) box.innerHTML = s;
+  })();
+
+  /* ---------- 编码 ---------- */
+  function enc() {
+    var n = 0n;
+    for (var k = 0; k < S.ans.length; k++) {
+      var v = S.ans[k] < 0 ? 0 : S.ans[k];
+      n = n * 6n + BigInt(v);
+    }
+    return n.toString(36);
+  }
+  function dec(str, len) {
+    var n = 0n;
+    for (var k = 0; k < str.length; k++) n = n * 36n + BigInt(parseInt(str[k], 36));
+    var out = new Array(len);
+    for (var j = len - 1; j >= 0; j--) { out[j] = Number(n % 6n); n = n / 6n; }
+    return out;
+  }
+
+  /* ---------- 刷卡 ---------- */
+  function startDeck(key) {
+    var d = DECKS[key];
+    S.deck = key;
+    S.i = 0;
+    S.hist = [];
+    S.ans = new Array(d.items.length);
+    for (var k = 0; k < S.ans.length; k++) S.ans[k] = -1;
+    S.view = false;
+    S.link = "";
+    S.type = null;
+    S.role = "";
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    show("role");
+    paintRole();
+  }
+
+  function paintRole() {
+    document.querySelectorAll("#role .deck").forEach(function (b) {
+      b.classList.toggle("sel", b.dataset.role === S.role);
+    });
+    document.querySelectorAll("#genderRow .gchip").forEach(function (b) {
+      b.classList.toggle("on", b.dataset.g === S.gender);
+    });
+    $("roleStart").disabled = !S.role;
+  }
+
+  function beginPlay() {
+    S.t0 = Date.now();
+    S.type = null;
+    show("play");
+    paint();
+  }
+
+  function item() { return DECKS[S.deck].items[S.i]; }
+
+  function paint() {
+    var d = DECKS[S.deck];
+    if (S.i >= d.items.length) { finish(); return; }
+    var it = item();
+    $("cnt").textContent = (S.i + 1) + " / " + d.items.length;
+    $("pbar").style.width = (S.i / d.items.length * 100) + "%";
+    $("cat").textContent = it[1];
+    $("word").textContent = it[0];
+    $("note").textContent = it[3] || "";
+    $("note").style.display = it[3] ? "block" : "none";
+    var card = $("card");
+    card.style.transform = "";
+    card.classList.remove("drag", "out");
+    pour(0);
+  }
+
+  /* 预览：拖拽过程中实时显示会得到哪一档 */
+  var lastPrev = -9;
+  function pour(level) {
+    if (level === lastPrev) return;
+    lastPrev = level;
+    var it = item();
+    var txt = {
+      "-1": "上划 · 跳过",
+      0: "拖动卡片，决定哪一档",
+      1: "雷区 · 绝对不行",
+      2: "抵触 · 不太行",
+      3: "好奇 · 一点点",
+      4: "喜欢 · 大半瓶",
+      5: "满溢 · 倒满"
+    };
+    var col = {
+      "-1": "var(--ink2)",
+      0: "var(--ink3)",
+      1: "var(--red)",
+      2: "var(--ink2)",
+      3: "var(--ink2)",
+      4: "var(--accent)",
+      5: "var(--accent)"
+    };
+    $("prevBottle").innerHTML = Bottle.tag(it[2], level > 0 ? level : 0, 46);
+    $("prevLabel").textContent = txt[level] !== undefined ? txt[level] : txt[0];
+    $("prevLabel").style.color = col[level] || col[0];
+  }
+
+  function levelFromDx(dx) {
+    var max = Math.min(window.innerWidth * 0.62, 320);
+    var p = dx / max;
+    if (p < 0.18) return 0;
+    if (p < 0.44) return 3;
+    if (p < 0.74) return 4;
+    return 5;
+  }
+
+  /* 左滑分两档：轻拖是抵触，拖到底是雷区 */
+  function levelFromLeft(dx) {
+    var max = Math.min(window.innerWidth * 0.62, 320);
+    return (-dx / max) < 0.52 ? 2 : 1;
+  }
+
+  function commit(level, dir) {
+    if (S.i >= DECKS[S.deck].items.length) return;
+    S.hist.push({ i: S.i, prev: S.ans[S.i] });
+    S.ans[S.i] = level;
+    var card = $("card");
+    card.classList.add("out");
+    card.style.transform = dir === "l" ? "translateX(-120%) rotate(-12deg)"
+      : dir === "u" ? "translateY(-128%) rotate(6deg)"
+      : "translateX(120%) rotate(12deg)";
+    card.style.opacity = "0";
+    S.i++;
+    setTimeout(function () {
+      card.style.opacity = "";
+      lastPrev = -9;
+      paint();
+    }, 170);
+  }
+
+  function syncHash() {
+    var r = RI[S.role];
+    if (r === undefined) r = 2;
+    var h = "#" + S.deck + "." + S.gender + "." + r + "." + enc();
+    if (S.nick) h += "." + encodeURIComponent(S.nick).replace(/\./g, "%2E");
+    S.link = h;
+    try { history.replaceState(null, "", h); } catch (e) { /* file:// 下可能不允许 */ }
+  }
+
+  function finish() {
+    $("pbar").style.width = "100%";
+    var sec = Math.max(1, Math.round((Date.now() - S.t0) / 1000));
+    S.dur = sec >= 60 ? Math.floor(sec / 60) + " 分 " + (sec % 60) + " 秒" : sec + " 秒";
+    S.code = Math.random().toString(36).slice(2, 6).toUpperCase();
+    S.type = XT.analyze(S.ans, DECKS[S.deck].items, S.role);
+    syncHash();
+    $("nick").value = S.nick;
+    render();
+    show("result");
+  }
+
+  /* ---------- 二维码（右对齐锚点，带静区） ---------- */
+  function qrMarkup(text, right, top, maxSize) {
+    var box = maxSize, d = "", qr, n, c, w, pad = 7, k, r;
+
+    if (typeof qrcode === "function") {
+      try {
+        qr = qrcode(0, "M");
+        qr.addData(text);
+        qr.make();
+        n = qr.getModuleCount();
+        c = Math.max(2, Math.floor((maxSize - pad * 2) / n));
+        w = n * c;
+        box = w + pad * 2;
+        for (r = 0; r < n; r++) {
+          for (k = 0; k < n; k++) {
+            if (qr.isDark(r, k)) d += "M" + (k * c) + " " + (r * c) + "h" + c + "v" + c + "h-" + c + "z";
+          }
+        }
+      } catch (e) { d = ""; }
+    }
+
+    var x = right - box;
+    if (!d) {
+      return '<g><rect x="' + x + '" y="' + top + '" width="' + box + '" height="' + box +
+        '" fill="#F1EDE4" stroke="#E2DCD1"/><text x="' + (x + box / 2) + '" y="' + (top + box / 2 + 5) +
+        '" font-size="12" text-anchor="middle" fill="#A9A296">无二维码</text></g>';
+    }
+    return '<g transform="translate(' + x + "," + top + ')">' +
+      '<rect width="' + box + '" height="' + box + '" fill="#FFFFFF"/>' +
+      '<g transform="translate(' + pad + "," + pad + ')"><path d="' + d + '" fill="#3A3733"/></g></g>';
+  }
+
+  function esc(t) {
+    return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /* ---------- 生成海报 ---------- */
+  function render() {
+    var d = DECKS[S.deck];
+    var shown = [];
+    d.items.forEach(function (it, k) {
+      var lv = S.ans[k];
+      if (lv > 0) shown.push([it[0], lv, it[2]]);
+    });
+    var cols = 5, cell = 200, top = 196;
+    var rows = Math.max(1, Math.ceil(shown.length / cols));
+    var W = 1080, H = top + rows * 176 + 190;
+
+    var gl = { f: "女", m: "男", x: "其他", n: "" }[S.gender] || "";
+    var sub = (gl ? gl + " · " : "") + (S.nick ? S.nick + " · " : "") + d.name + " · " +
+      shown.length + " 项 · 用时 " + S.dur;
+
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + H + '" width="' + W +
+      '" height="' + H + '" style="display:block;width:100%;height:auto" font-family="PingFang SC,Hiragino Sans GB,Microsoft YaHei,sans-serif">';
+    s += '<rect width="' + W + '" height="' + H + '" fill="#FAF7F2"/>';
+    s += '<text x="56" y="98" font-size="42" font-weight="500" fill="#1F1D1A">' + BRAND + "</text>";
+    s += '<text x="56" y="140" font-size="21" fill="#6B665D">' + esc(sub) + "</text>";
+    s += '<text x="1024" y="98" font-size="20" text-anchor="end" fill="#A9A296">No.' + (S.code || "0000") + "</text>";
+    if (S.type) {
+      s += '<text x="1024" y="140" font-size="22" text-anchor="end" fill="#993556">' + esc(S.type.name) + "</text>";
+    }
+    s += '<line x1="56" y1="168" x2="1024" y2="168" stroke="#E4DED2" stroke-width="1"/>';
+
+    if (!shown.length) {
+      s += '<text x="540" y="360" font-size="22" text-anchor="middle" fill="#A9A296">这一瓶是空的</text>';
+    }
+
+    shown.forEach(function (row, idx) {
+      var cx = 40 + (idx % cols) * cell;
+      var cy = top + Math.floor(idx / cols) * 176;
+      s += '<g transform="translate(' + (cx + 52) + "," + cy + ') scale(0.84)">' + Bottle.mark(row[2], row[1]) + "</g>";
+      s += '<text x="' + (cx + 100) + '" y="' + (cy + 152) +
+        '" font-size="18" text-anchor="middle" fill="#3A3733">' + row[0] + "</text>";
+    });
+
+    var ly = top + rows * 176 + 26;
+    var legend = [[1, "雷区"], [2, "抵触"], [3, "好奇"], [4, "喜欢"], [5, "满溢"]];
+    legend.forEach(function (lg, k) {
+      var lx = 56 + k * 132;
+      s += '<g transform="translate(' + lx + "," + (ly - 20) + ') scale(0.22)">' + Bottle.mark("round", lg[0]) + "</g>";
+      s += '<text x="' + (lx + 30) + '" y="' + (ly + 6) + '" font-size="18" fill="#6B665D">' + lg[1] + "</text>";
+    });
+
+    var url = location.href.split("#")[0] + (S.link || location.hash);
+    s += '<text x="56" y="' + (ly + 64) + '" font-size="15" fill="#A9A296">' + CREDIT + "</text>";
+    s += '<text x="884" y="' + (ly + 70) + '" font-size="15" text-anchor="end" fill="#A9A296">扫码做你自己的</text>';
+    s += qrMarkup(url, 1024, ly + 2, 128);
+    s += "</svg>";
+
+    $("posterBox").innerHTML = s;
+    $("resTitle").textContent = d.name + " · 你的瓶子";
+    var c5 = S.ans.filter(function (v) { return v === 5; }).length;
+    var c4 = S.ans.filter(function (v) { return v === 4; }).length;
+    var c1 = S.ans.filter(function (v) { return v === 1; }).length;
+    $("resSub").textContent = "满溢 " + c5 + " · 喜欢 " + c4 + " · 雷区 " + c1 + " · 跳过 " +
+      S.ans.filter(function (v) { return v <= 0; }).length;
+    paintType();
+  }
+
+  /* ---------- 类型卡 ---------- */
+  function paintType() {
+    if (!S.type) { $("typecard").innerHTML = ""; return; }
+    var t = S.type;
+    if (t.empty) {
+      $("typecard").innerHTML = '<div class="tc-name">空瓶</div>' +
+        '<p class="tc-d">你什么都没放进去，所以没有类型可给。这本身也是一种回答。</p>';
+      return;
+    }
+    var bars = t.dims.map(function (d) {
+      return '<div class="bar-row"><span>' + d.k + '</span><div class="tr"><i style="width:' +
+        Math.round(d.v * 100) + '%"></i></div><b>' + Math.round(d.v * 100) + '</b></div>';
+    }).join("");
+    var tips = t.tips.map(function (x) { return "<li>" + x + "</li>"; }).join("");
+
+    $("typecard").innerHTML =
+      '<div class="tc-pos">' + t.pos + "</div>" +
+      '<div class="tc-name">' + t.name + "</div>" +
+      '<p class="tc-d">' + t.desc + "</p>" +
+      (t.prefixNote ? '<p class="tc-d" style="font-size:13px;color:var(--ink3)">' + t.prefixNote + "</p>" : "") +
+      '<div class="bars">' + bars + "</div>" +
+      (t.extra ? '<p class="tc-d" style="font-size:13px">' + t.extra + "</p>" : "") +
+      '<p class="tc-pit">' + t.pit + "</p>" +
+      '<ul class="tips">' + tips + "</ul>" +
+      '<p class="tc-fine">这不是诊断，也不预测任何事——只是把你自己的答案归纳成一个方便记住的说法。你有权随时不同意它。</p>';
+  }
+
+  /* ---------- 存图 ---------- */
+  function showSave(dataUrl) {
+    var o = document.createElement("div");
+    o.className = "saveov";
+    o.innerHTML = '<p>长按下面的图片，保存到相册</p><img src="' + dataUrl +
+      '" alt="我的瓶子"><button class="pill solid">完成</button>';
+    document.body.appendChild(o);
+    o.querySelector("button").addEventListener("click", function () {
+      document.body.removeChild(o);
+    });
+  }
+
+  function savePNG() {
+    var svg = $("posterBox").querySelector("svg");
+    if (!svg) return;
+    var str = new XMLSerializer().serializeToString(svg);
+    var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(str);
+    var w = +svg.getAttribute("width"), h = +svg.getAttribute("height");
+    var img = new Image();
+    img.onload = function () {
+      var cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      var ctx = cv.getContext("2d");
+      ctx.fillStyle = "#FAF7F2";
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      var ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      cv.toBlob(function (blob) {
+        if (!blob) { toast("生成失败，请截图保存"); return; }
+        if (ios) {
+          showSave(cv.toDataURL("image/png"));
+          return;
+        }
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "性癖之瓶-" + DECKS[S.deck].name + ".png";
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        toast("已保存");
+      }, "image/png");
+    };
+    img.onerror = function () { toast("生成失败，请截图保存"); };
+    img.src = url;
+  }
+
+  /* ---------- 拖拽 ---------- */
+  var drag = null;
+  var card = $("card");
+
+  card.addEventListener("pointerdown", function (e) {
+    if (S.i >= DECKS[S.deck].items.length) return;
+    drag = { x: e.clientX, y: e.clientY, dx: 0, dy: 0 };
+    card.setPointerCapture(e.pointerId);
+    card.classList.add("drag");
+  });
+
+  card.addEventListener("pointermove", function (e) {
+    if (!drag) return;
+    drag.dx = e.clientX - drag.x;
+    drag.dy = e.clientY - drag.y;
+    var dx = drag.dx, dy = drag.dy;
+
+    /* 竖直方向占优且向上 → 跳过 */
+    if (dy < -16 && Math.abs(dy) > Math.abs(dx) * 1.2) {
+      card.style.transform = "translate(" + (dx * 0.35) + "px," + dy + "px) rotate(" + (dx * 0.02) + "deg)";
+      pour(-1);
+      return;
+    }
+
+    card.style.transform = "translateX(" + dx + "px) rotate(" + (dx * 0.035) + "deg)";
+    if (dx < -16) {
+      pour(levelFromLeft(dx));
+    } else if (dx > 16) {
+      pour(levelFromDx(dx) || 3);
+    } else {
+      pour(0);
+    }
+  });
+
+  function endDrag() {
+    if (!drag) return;
+    var dx = drag.dx, dy = drag.dy;
+    drag = null;
+    card.classList.remove("drag");
+
+    if (dy < -70 && Math.abs(dy) > Math.abs(dx) * 1.2) { commit(0, "u"); return; }
+    if (dx < -50) { commit(levelFromLeft(dx), "l"); return; }
+    if (dx > 60) { commit(levelFromDx(dx), "r"); return; }
+
+    card.style.transform = "";
+    pour(0);
+  }
+  card.addEventListener("pointerup", endDrag);
+  card.addEventListener("pointercancel", endDrag);
+
+  /* ---------- 按钮 ---------- */
+  document.querySelectorAll(".btns .pill").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = b.dataset.act;
+      if (a === "no") commit(1, "l");
+      if (a === "rel") commit(2, "l");
+      if (a === "skip") commit(0, "u");
+      if (a === "yes") commit(4, "r");
+    });
+  });
+
+  $("btnUndo").addEventListener("click", function () {
+    if (!S.hist.length) { toast("没有可撤销的"); return; }
+    var h = S.hist.pop();
+    S.ans[h.i] = h.prev;
+    S.i = h.i;
+    lastPrev = -9;
+    paint();
+  });
+
+  $("btnBack").addEventListener("click", function () {
+    if (S.i > 0 && !confirm("退出这一瓶？已填的会丢。")) return;
+    show("pick");
+  });
+
+  $("btnSave").addEventListener("click", savePNG);
+  $("btnCopy").addEventListener("click", function () {
+    var base = location.href.split("#")[0];
+    var link = base + (S.link || location.hash);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link).then(function () { toast("链接已复制"); },
+        function () { prompt("复制这个链接", link); });
+    } else { prompt("复制这个链接", link); }
+  });
+  $("btnAgain").addEventListener("click", function () { show("pick"); });
+
+  var nickTimer = null;
+  $("nick").addEventListener("input", function () {
+    S.nick = this.value.trim();
+    clearTimeout(nickTimer);
+    nickTimer = setTimeout(function () {
+      syncHash();
+      render();
+    }, 260);
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (!$("play").classList.contains("on")) return;
+    if (e.key === "ArrowLeft") commit(e.shiftKey ? 2 : 1, "l");
+    else if (e.key === "ArrowRight") commit(4, "r");
+    else if (e.key === "ArrowUp" || e.key === " ") { e.preventDefault(); commit(0, "u"); }
+  });
+
+  /* ---------- 入口 ---------- */
+  window.addEventListener("beforeunload", function (e) {
+    if ($("play").classList.contains("on") && S.i > 0 && S.i < DECKS[S.deck].items.length) {
+      e.preventDefault(); e.returnValue = "";
+    }
+  });
+
+  document.querySelectorAll(".deck[data-deck]").forEach(function (b) {
+    b.addEventListener("click", function () { startDeck(b.dataset.deck); });
+  });
+
+  document.querySelectorAll("[data-role]").forEach(function (b) {
+    b.addEventListener("click", function () { S.role = b.dataset.role; paintRole(); });
+  });
+
+  document.querySelectorAll("#genderRow .gchip").forEach(function (b) {
+    b.addEventListener("click", function () { S.gender = b.dataset.g; paintRole(); });
+  });
+
+  $("roleStart").addEventListener("click", function () { if (S.role) beginPlay(); });
+  $("roleBack").addEventListener("click", function () { show("pick"); });
+
+  /* ---------- 对撞 ---------- */
+  function chipList(idx, cls, d) {
+    return '<div class="chips">' + idx.map(function (i) {
+      return '<span class="chip ' + cls + '">' + d.items[i][0] + "</span>";
+    }).join("") + "</div>";
+  }
+
+  function runMatch() {
+    var raw = $("mInput").value.trim();
+    if (!raw) { toast("先把对方的链接粘进来"); return; }
+    var h = raw.indexOf("#") >= 0 ? raw.slice(raw.indexOf("#") + 1) : raw.replace(/^#/, "");
+    var parts = h.split(".");
+    var d = DECKS[parts[0]];
+    if (!d || parts.length < 2) { toast("这不是一条瓶子链接"); return; }
+    if (parts[0] !== S.deck) { toast("两瓶不是同一套词表，没法对撞"); return; }
+
+    var roleKey = "switch", codeStr = parts[1];
+    if (parts.length >= 3) { roleKey = RI_back[+parts[1]] || "switch"; codeStr = parts[2]; }
+
+    var theirs;
+    try { theirs = dec(codeStr, d.items.length); } catch (e) { toast("链接里的答案坏了"); return; }
+
+    var r = XM.match(S.ans, theirs, d.items);
+    var tp = XT.analyze(theirs, d.items, roleKey);
+
+    var col = r.score >= 65 ? "#993556" : r.score >= 45 ? "#1F1D1A" : "#A32D2D";
+    var out = '<div style="margin-top:26px">';
+    out += '<div class="score" style="color:' + col + '">' + r.score + "<small> / 100</small></div>";
+    out += '<p class="tc-d" style="margin-top:8px">' + r.text + "</p>";
+    out += '<p class="tc-d" style="font-size:12.5px;color:var(--ink3);margin-top:6px">' +
+      "对方是「" + tp.name + "」· " + tp.pos + "</p>";
+    if (r.union && r.union < d.items.length * 0.7) {
+      out += '<p class="tc-d" style="font-size:12.5px;color:var(--ink3)">' +
+        "只有 " + r.union + " 项至少有一边表了态，这个数字的参考价值有限。" +
+        (r.bothSkip ? "另有 " + r.bothSkip + " 项两个人都跳过了。" : "") + "</p>";
+    }
+
+    if (r.shared.length) out += '<div class="grp"><h3>重合区 · 可以一起（' + r.shared.length + '）</h3>' + chipList(r.shared.map(function (x) { return x.i; }), "ok", d) + "</div>";
+    if (r.onlyA.length) out += '<div class="grp"><h3>只有你想要（' + r.onlyA.length + '）</h3>' + chipList(r.onlyA, "mid", d) + "</div>";
+    if (r.onlyB.length) out += '<div class="grp"><h3>只有对方想要（' + r.onlyB.length + '）</h3>' + chipList(r.onlyB, "mid", d) + "</div>";
+    if (r.hard.length || r.soft.length) out += '<div class="grp"><h3>撞线区 · 不要提（' + (r.hard.length + r.soft.length) + '）</h3>' + chipList(r.hard.concat(r.soft), "no", d) + "</div>";
+    if (r.agreeNo.length) out += '<div class="grp"><h3>共同雷区 · 安全的共识（' + r.agreeNo.length + '）</h3>' + chipList(r.agreeNo, "mid", d) + "</div>";
+
+    if (r.tips.length) {
+      out += '<ul class="tips" style="margin-top:22px;border-top:1px solid var(--line);padding-top:16px">' +
+        r.tips.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>";
+    }
+    out += '<p class="tc-fine">匹配度只算重叠和冲突，不算感情。分数低不代表关系有问题，只代表你们想要的东西不一样。</p>';
+    out += "</div>";
+
+    $("mOut").innerHTML = out;
+    $("mOut").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  $("btnMatch").addEventListener("click", function () {
+    $("mOut").innerHTML = "";
+    show("match");
+  });
+  $("mBack").addEventListener("click", function () { show("result"); });
+  $("mRun").addEventListener("click", runMatch);
+  $("mMine").addEventListener("click", function () {
+    var base = location.href.split("#")[0];
+    var link = base + (S.link || location.hash);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link).then(function () { toast("我的链接已复制"); },
+        function () { prompt("复制这个链接", link); });
+    } else { prompt("复制这个链接", link); }
+  });
+
+  /* 直接打开分享链接 */
+  function fromHash() {
+    var h = location.hash.replace(/^#/, "");
+    if (!h || h.indexOf(".") < 0) return false;
+    var parts = h.split(".");
+    var d = DECKS[parts[0]];
+    if (!d) return false;
+
+    /* 性别位是单个字母（f/m/x/n），位置位是单个数字，靠这个区分新旧格式 */
+    var i = 1, g = "n";
+    if (parts.length >= 4 && /^[a-z]$/.test(parts[1] || "")) { g = parts[1]; i = 2; }
+
+    var roleKey = "switch", codeStr = parts[i] || "";
+    if (parts.length >= i + 2) {
+      roleKey = RI_back[+parts[i]] || "switch";
+      codeStr = parts[i + 1];
+    }
+    var nickStr = parts[i + 2] ? decodeURIComponent(parts[i + 2]) : "";
+
+    try {
+      S.deck = parts[0];
+      S.gender = g;
+      S.role = roleKey;
+      S.ans = dec(codeStr, d.items.length);
+      S.nick = nickStr;
+      $("nick").value = S.nick;
+      S.dur = "—";
+      S.code = codeStr.slice(-4).toUpperCase();
+      S.type = XT.analyze(S.ans, d.items, roleKey);
+      render();
+      $("resTitle").textContent = d.name + " · 别人做好的一瓶";
+      show("result");
+      return true;
+    } catch (err) { return false; }
+  }
+
+  function enter() { if (!fromHash()) show("pick"); }
+
+  if (localStorage.getItem("xp18") === "1") enter();
+  $("gateYes").addEventListener("click", function () { localStorage.setItem("xp18", "1"); enter(); });
+  $("gateNo").addEventListener("click", function () { location.href = "about:blank"; });
+})();
+</script>
+</body>
+</html>
