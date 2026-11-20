@@ -31,13 +31,15 @@ python -m http.server 8080
 | `og.png` | 分享预览图 1200×630（发链接给 X / Discord 时的缩略图） |
 | `preview.html` | 断点预览：一次看 375 / 768 / 1024 / 1440 四档（开发用） |
 | `bottles.html` | 瓶型视觉预览页（开发用，不是游戏的一部分） |
+| `词表.md` | 95 个词条的可读清单 + 风险项清单（内容审核用，脚本生成） |
 | `tools/make-og.py` | 重新生成 `og.png` 的脚本（改了封面文案就跑一次） |
 | `spec.md` | 交互规格：状态机、手势阈值、算法公式、文案表、验收清单 |
 
-改完封面文案，重新生成预览图：
+改完东西要重新生成的两份文件：
 
 ```bash
-python tools/make-og.py     # 需要 Pillow
+python tools/make-og.py     # 预览图，需要 Pillow
+node tools/make-words.js    # 词表文档
 ```
 
 ## 技术要点
