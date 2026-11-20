@@ -510,7 +510,9 @@ iOS：canvas.toDataURL 后 window.open，提示"长按保存"（Safari 不支持
 | 安全区 | 底部按钮 `padding-bottom: calc(30px + env(safe-area-inset-bottom))` |
 | 无 JS 兜底 | 不需要，但给一句「请开启 JavaScript」 |
 
-**`og:image` 必须写绝对地址**，不能用相对路径——抓取器不认。换域名或换部署位置时，这一行要跟着改，否则预览图会 404（而且不会报错，只是没图）。
+**`og:image` 必须写绝对地址，而且必须带 sharecode**。这个托管把整个站点挂在 share 码后面：`/og.png` 直接访问是 403，`/og.png?sharecode=…` 才是 200。抓取器不会自动带上页面的查询串，所以只写相对路径或裸域名，预览图一定是空的（而且不报错，只是没图）。
+
+换域名、换部署位置、或者 share 码变了，这一行要跟着改。
 
 ### 7.1 断点与重排
 
