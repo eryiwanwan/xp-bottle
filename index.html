@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#F7F4EE">
 <title>小妈的性癖之瓶</title>
+<meta name="description" content="35 张卡，滑完就是一瓶。不诊断，不评分，也不替你下结论。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23FAF7F2'/%3E%3Cpath d='M12 5h8v4l3 3v13a3 3 0 0 1-3 3h-8a3 3 0 0 1-3-3V12l3-3z' fill='none' stroke='%233A3733' stroke-width='2'/%3E%3Cpath d='M9 19h14v6a3 3 0 0 1-3 3h-8a3 3 0 0 1-3-3z' fill='%23D4537E'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="小妈的性癖之瓶">
+<meta property="og:title" content="小妈的性癖之瓶">
+<meta property="og:description" content="35 张卡，滑完就是一瓶。不诊断，不评分，也不替你下结论。">
+<meta property="og:image" content="https://xp-bottle.app.workbuddy.host/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="小妈的性癖之瓶">
+<meta name="twitter:description" content="35 张卡，滑完就是一瓶。不诊断，不评分，也不替你下结论。">
+<meta name="twitter:image" content="https://xp-bottle.app.workbuddy.host/og.png">
 <style>
   :root{
     --paper:#F7F4EE; --surface:#FFFFFF; --ink:#1F1D1A; --ink2:#6B665D; --ink3:#A9A296;
@@ -254,6 +268,21 @@
   </div>
 </section>
 
+<!-- 对撞邀请 -->
+<section id="invite" class="screen">
+  <div class="wrap" style="margin:auto;text-align:center">
+    <div class="cover-k">对撞邀请</div>
+    <h1 class="pk-t" style="margin-bottom:8px"><span id="invName">有人</span> 想和你对一瓶</h1>
+    <p class="pk-s" id="invDeck">基础篇 · 35 项</p>
+    <p class="pk-s" style="font-size:13px;color:var(--ink3);line-height:1.9">
+      同一套词表，各刷一瓶，刷完自动出对照。<br>
+      结果只在你自己的浏览器里算，不上传。
+    </p>
+    <button class="pill solid" id="invStart" style="width:100%;margin-top:22px">开始刷</button>
+    <div style="margin-top:10px"><button class="pill ghost" id="invSkip">先做我自己的</button></div>
+  </div>
+</section>
+
 <!-- 位置 + 性别 -->
 <section id="role" class="screen">
   <div class="wrap">
@@ -340,7 +369,7 @@
     <textarea class="m-in" id="mInput" placeholder="https://…/#basic.2.ndq3k8f2m1"></textarea>
     <div style="display:flex;gap:10px;margin-top:12px">
       <button class="pill solid" id="mRun" style="flex:1">开始对撞</button>
-      <button class="pill" id="mMine">复制我的链接</button>
+      <button class="pill" id="mMine">复制邀请链接</button>
     </div>
     <div id="mOut"></div>
   </div>
@@ -430,14 +459,31 @@
     }
   };
 
+  /* 跨词表对撞时用来对齐的规范名。只放语义确实等价的，宁缺毋滥。 */
+  var CANON = {
+    "蒙眼": "blind", "口塞": "gag", "制服": "uniform", "镜子前": "mirror",
+    "被拍下来": "photo", "寸止": "edge",
+    "情趣玩具": "toy", "玩具": "toy",
+    "打屁股": "spank", "掌心落在屁股上": "spank",
+    "抓头发": "hair", "头发被抓住": "hair",
+    "耳边低语": "whisper", "在耳边说话": "whisper",
+    "被抱到发疼": "hug", "被抱着不放": "hug",
+    "手腕被绑": "wrist", "手腕被握住": "wrist",
+    "角色扮演": "roleplay", "医生与病人": "roleplay",
+    "羽毛与轻触": "feather", "羽毛扫过": "feather",
+    "被看着": "gaze", "被认真地看着": "gaze"
+  };
+
+  function canon(name) { return CANON[name] || name; }
+
   var S = { deck: "basic", i: 0, ans: [], hist: [], t0: 0, dur: "", view: false,
-            role: "", gender: "n", type: null, link: "", nick: "" };
+            role: "", gender: "n", type: null, link: "", nick: "", rival: null };
   var RI = { dom: 0, sub: 1, switch: 2, fantasy: 3 };
   var RI_back = ["dom", "sub", "switch", "fantasy"];
   var $ = function (id) { return document.getElementById(id); };
 
   function show(name) {
-    ["gate", "pick", "role", "play", "result", "match"].forEach(function (n) {
+    ["gate", "pick", "invite", "role", "play", "result", "match"].forEach(function (n) {
       $(n).classList.toggle("on", n === name);
     });
     window.scrollTo(0, 0);
@@ -618,6 +664,15 @@
     try { history.replaceState(null, "", h); } catch (e) { /* file:// 下可能不允许 */ }
   }
 
+  /* 邀请链接：对方的链接前面加 i.，点开直接进对撞流程 */
+  function inviteHash() {
+    var r = RI[S.role];
+    if (r === undefined) r = 2;
+    var h = "#i." + S.deck + "." + S.gender + "." + r + "." + enc();
+    if (S.nick) h += "." + encodeURIComponent(S.nick).replace(/\./g, "%2E");
+    return h;
+  }
+
   function finish() {
     $("pbar").style.width = "100%";
     var sec = Math.max(1, Math.round((Date.now() - S.t0) / 1000));
@@ -628,6 +683,14 @@
     $("nick").value = S.nick;
     render();
     show("result");
+
+    /* 从邀请链接进来的，刷完直接出对撞结果 */
+    if (S.rival) {
+      var rival = S.rival;
+      S.rival = null;
+      doMatch(rival);
+      show("match");
+    }
   }
 
   /* ---------- 二维码（右对齐锚点，带静区） ---------- */
@@ -927,47 +990,75 @@
   $("roleBack").addEventListener("click", function () { show("pick"); });
 
   /* ---------- 对撞 ---------- */
-  function chipList(idx, cls, d) {
+  function chipList(idx, cls, items) {
     return '<div class="chips">' + idx.map(function (i) {
-      return '<span class="chip ' + cls + '">' + d.items[i][0] + "</span>";
+      return '<span class="chip ' + cls + '">' + items[i][0] + "</span>";
     }).join("") + "</div>";
   }
 
   function runMatch() {
     var raw = $("mInput").value.trim();
     if (!raw) { toast("先把对方的链接粘进来"); return; }
-    var h = raw.indexOf("#") >= 0 ? raw.slice(raw.indexOf("#") + 1) : raw.replace(/^#/, "");
-    var parts = h.split(".");
-    var d = DECKS[parts[0]];
-    if (!d || parts.length < 2) { toast("这不是一条瓶子链接"); return; }
-    if (parts[0] !== S.deck) { toast("两瓶不是同一套词表，没法对撞"); return; }
+    var o = parseHash(raw.indexOf("#") >= 0 ? raw.slice(raw.indexOf("#")) : raw);
+    if (!o) { toast("这不是一条瓶子链接"); return; }
+    var d = DECKS[o.deck];
+    var ans;
+    try { ans = dec(o.code, d.items.length); } catch (e) { toast("链接里的答案坏了"); return; }
+    doMatch({ deck: o.deck, gender: o.gender, role: o.role, nick: o.nick, ans: ans });
+  }
 
-    var roleKey = "switch", codeStr = parts[1];
-    if (parts.length >= 3) { roleKey = RI_back[+parts[1]] || "switch"; codeStr = parts[2]; }
+  /* 同一套词表直接比；不同套就把同名项对齐，只比交集 */
+  function doMatch(o) {
+    var d = DECKS[S.deck];
+    var items = d.items, a = S.ans, b = o.ans, cross = false;
 
-    var theirs;
-    try { theirs = dec(codeStr, d.items.length); } catch (e) { toast("链接里的答案坏了"); return; }
+    if (o.deck !== S.deck) {
+      var mapB = {};
+      DECKS[o.deck].items.forEach(function (it, i) { mapB[canon(it[0])] = i; });
 
-    var r = XM.match(S.ans, theirs, d.items);
-    var tp = XT.analyze(theirs, d.items, roleKey);
+      var vi = [], av = [], bv = [];
+      d.items.forEach(function (it, i) {
+        var key = canon(it[0]);
+        if (mapB[key] !== undefined) {
+          vi.push(it); av.push(a[i]); bv.push(b[mapB[key]]);
+        }
+      });
+
+      if (vi.length < 4) {
+        $("mOut").innerHTML = '<div style="margin-top:26px"><p class="tc-d">' +
+          "这两套词表里同名的词条只有 " + vi.length + " 项，太少，撞了也不说明问题。</p>" +
+          '<p class="tc-d" style="font-size:13px;color:var(--ink3)">最省事的办法：让对方也用「' +
+          d.name + "」做一瓶，再来撞。</p></div>";
+        $("mOut").scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      items = vi; a = av; b = bv; cross = true;
+    }
+
+    var r = XM.match(a, b, items);
+    var tp = XT.analyze(o.ans, DECKS[o.deck].items, o.role);
 
     var col = r.score >= 65 ? "#993556" : r.score >= 45 ? "#1F1D1A" : "#A32D2D";
     var out = '<div style="margin-top:26px">';
     out += '<div class="score" style="color:' + col + '">' + r.score + "<small> / 100</small></div>";
     out += '<p class="tc-d" style="margin-top:8px">' + r.text + "</p>";
     out += '<p class="tc-d" style="font-size:12.5px;color:var(--ink3);margin-top:6px">' +
-      "对方是「" + tp.name + "」· " + tp.pos + "</p>";
-    if (r.union && r.union < d.items.length * 0.7) {
+      (o.nick ? o.nick + " 是" : "对方是") + "「" + tp.name + "」· " + tp.pos + "</p>";
+    if (cross) {
+      out += '<p class="tc-d" style="font-size:12.5px;color:var(--ink3)">' +
+        "两套词表不同，只在 " + items.length + " 项能对应上的词条里比，其余没算进去。</p>";
+    }
+    if (r.union && r.union < items.length * 0.7) {
       out += '<p class="tc-d" style="font-size:12.5px;color:var(--ink3)">' +
         "只有 " + r.union + " 项至少有一边表了态，这个数字的参考价值有限。" +
         (r.bothSkip ? "另有 " + r.bothSkip + " 项两个人都跳过了。" : "") + "</p>";
     }
 
-    if (r.shared.length) out += '<div class="grp"><h3>重合区 · 可以一起（' + r.shared.length + '）</h3>' + chipList(r.shared.map(function (x) { return x.i; }), "ok", d) + "</div>";
-    if (r.onlyA.length) out += '<div class="grp"><h3>只有你想要（' + r.onlyA.length + '）</h3>' + chipList(r.onlyA, "mid", d) + "</div>";
-    if (r.onlyB.length) out += '<div class="grp"><h3>只有对方想要（' + r.onlyB.length + '）</h3>' + chipList(r.onlyB, "mid", d) + "</div>";
-    if (r.hard.length || r.soft.length) out += '<div class="grp"><h3>撞线区 · 不要提（' + (r.hard.length + r.soft.length) + '）</h3>' + chipList(r.hard.concat(r.soft), "no", d) + "</div>";
-    if (r.agreeNo.length) out += '<div class="grp"><h3>共同雷区 · 安全的共识（' + r.agreeNo.length + '）</h3>' + chipList(r.agreeNo, "mid", d) + "</div>";
+    if (r.shared.length) out += '<div class="grp"><h3>重合区 · 可以一起（' + r.shared.length + '）</h3>' + chipList(r.shared.map(function (x) { return x.i; }), "ok", items) + "</div>";
+    if (r.onlyA.length) out += '<div class="grp"><h3>只有你想要（' + r.onlyA.length + '）</h3>' + chipList(r.onlyA, "mid", items) + "</div>";
+    if (r.onlyB.length) out += '<div class="grp"><h3>只有对方想要（' + r.onlyB.length + '）</h3>' + chipList(r.onlyB, "mid", items) + "</div>";
+    if (r.hard.length || r.soft.length) out += '<div class="grp"><h3>撞线区 · 不要提（' + (r.hard.length + r.soft.length) + '）</h3>' + chipList(r.hard.concat(r.soft), "no", items) + "</div>";
+    if (r.agreeNo.length) out += '<div class="grp"><h3>共同雷区 · 安全的共识（' + r.agreeNo.length + '）</h3>' + chipList(r.agreeNo, "mid", items) + "</div>";
 
     if (r.tips.length) {
       out += '<ul class="tips" style="margin-top:22px;border-top:1px solid var(--line);padding-top:16px">' +
@@ -988,20 +1079,21 @@
   $("mRun").addEventListener("click", runMatch);
   $("mMine").addEventListener("click", function () {
     var base = location.href.split("#")[0];
-    var link = base + (S.link || location.hash);
+    var link = base + inviteHash();
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(link).then(function () { toast("我的链接已复制"); },
-        function () { prompt("复制这个链接", link); });
-    } else { prompt("复制这个链接", link); }
+      navigator.clipboard.writeText(link).then(function () { toast("邀请链接已复制，对方点开就能撞"); },
+        function () { prompt("复制这个链接发给对方", link); });
+    } else { prompt("复制这个链接发给对方", link); }
   });
 
-  /* 直接打开分享链接 */
-  function fromHash() {
-    var h = location.hash.replace(/^#/, "");
-    if (!h || h.indexOf(".") < 0) return false;
+  /* 解析分享链接：i. 开头的是对撞邀请，其余是「看我的瓶子」 */
+  function parseHash(raw) {
+    var h = String(raw || "").replace(/^#/, "");
+    if (!h) return null;
     var parts = h.split(".");
-    var d = DECKS[parts[0]];
-    if (!d) return false;
+    var invite = false;
+    if (parts[0] === "i") { invite = true; parts = parts.slice(1); }
+    if (!DECKS[parts[0]]) return null;
 
     /* 性别位是单个字母（f/m/x/n），位置位是单个数字，靠这个区分新旧格式 */
     var i = 1, g = "n";
@@ -1012,24 +1104,52 @@
       roleKey = RI_back[+parts[i]] || "switch";
       codeStr = parts[i + 1];
     }
-    var nickStr = parts[i + 2] ? decodeURIComponent(parts[i + 2]) : "";
+    var nick = "";
+    if (parts[i + 2]) { try { nick = decodeURIComponent(parts[i + 2]); } catch (e) { nick = ""; } }
 
-    try {
-      S.deck = parts[0];
-      S.gender = g;
-      S.role = roleKey;
-      S.ans = dec(codeStr, d.items.length);
-      S.nick = nickStr;
-      $("nick").value = S.nick;
-      S.dur = "—";
-      S.code = codeStr.slice(-4).toUpperCase();
-      S.type = XT.analyze(S.ans, d.items, roleKey);
-      render();
-      $("resTitle").textContent = d.name + " · 别人做好的一瓶";
-      show("result");
-      return true;
-    } catch (err) { return false; }
+    return { invite: invite, deck: parts[0], gender: g, role: roleKey, code: codeStr, nick: nick };
   }
+
+  function fromHash() {
+    var o = parseHash(location.hash);
+    if (!o) return false;
+
+    var d = DECKS[o.deck];
+    var ans;
+    try { ans = dec(o.code, d.items.length); } catch (e) { return false; }
+
+    if (o.invite) {
+      S.rival = { deck: o.deck, gender: o.gender, role: o.role, nick: o.nick, ans: ans };
+      $("invName").textContent = o.nick || "有人";
+      $("invDeck").textContent = d.name + " · " + d.items.length + " 项";
+      show("invite");
+      return true;
+    }
+
+    S.deck = o.deck;
+    S.gender = o.gender;
+    S.role = o.role;
+    S.ans = ans;
+    S.nick = o.nick;
+    $("nick").value = S.nick;
+    S.dur = "—";
+    S.code = o.code.slice(-4).toUpperCase();
+    S.type = XT.analyze(S.ans, d.items, o.role);
+    render();
+    $("resTitle").textContent = d.name + " · 别人做好的一瓶";
+    show("result");
+    return true;
+  }
+
+  /* 邀请屏：接受就刷同一套，刷完自动撞 */
+  $("invStart").addEventListener("click", function () {
+    if (S.rival) startDeck(S.rival.deck);
+  });
+  $("invSkip").addEventListener("click", function () {
+    S.rival = null;
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    show("pick");
+  });
 
   function enter() { if (!fromHash()) show("pick"); }
 

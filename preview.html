@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>断点预览 · 开发用</title>
+<style>
+  :root{--paper:#F7F4EE;--ink:#1F1D1A;--ink2:#6B665D;--ink3:#A9A296;--line:rgba(31,29,26,.12)}
+  *{box-sizing:border-box}
+  body{margin:0;background:#EFEAE1;color:var(--ink);
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:14px}
+  header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 20px;
+    background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  h1{font-size:15px;font-weight:500;margin:0 14px 0 0}
+  h1 small{font-weight:400;color:var(--ink3);font-size:12px;margin-left:6px}
+  button{border:1px solid rgba(31,29,26,.22);background:#fff;border-radius:999px;
+    padding:7px 14px;font:inherit;font-size:13px;color:var(--ink2);cursor:pointer}
+  button.on{background:var(--ink);color:#FBF8F2;border-color:var(--ink)}
+  .meta{margin-left:auto;font-size:12px;color:var(--ink3)}
+  .stage{padding:20px;overflow:auto}
+  .wrap{position:relative;margin:0 auto;background:#fff;border-radius:12px;
+    box-shadow:0 1px 0 rgba(31,29,26,.06);overflow:hidden}
+  iframe{border:0;display:block;transform-origin:top left;background:var(--paper)}
+  .tick{position:absolute;top:0;left:0;right:0;height:0;border-top:1px dashed #E24B4A;opacity:.5;z-index:3}
+</style>
+</head>
+<body>
+<header>
+  <h1>断点预览<small>开发用，不对外</small></h1>
+  <button data-w="375">375 手机</button>
+  <button data-w="390">390 手机</button>
+  <button data-w="768">768 iPad 竖</button>
+  <button data-w="1024">1024 桌面</button>
+  <button data-w="1440">1440 大屏</button>
+  <button id="reload">重新加载</button>
+  <div class="meta" id="meta"></div>
+</header>
+
+<div class="stage">
+  <div class="wrap" id="wrap"><iframe id="frame" src="index.html"></iframe></div>
+</div>
+
+<script>
+(function () {
+  var frame = document.getElementById("frame");
+  var wrap = document.getElementById("wrap");
+  var meta = document.getElementById("meta");
+
+  function setW(w) {
+    document.querySelectorAll("[data-w]").forEach(function (b) {
+      b.classList.toggle("on", +b.dataset.w === w);
+    });
+    var H = 900;
+    frame.style.width = w + "px";
+    frame.style.height = H + "px";
+    var scale = Math.min(1, (window.innerWidth - 56) / w);
+    frame.style.transform = "scale(" + scale + ")";
+    wrap.style.width = Math.round(w * scale) + "px";
+    wrap.style.height = Math.round(H * scale) + "px";
+    meta.textContent = w + " × 900　缩放 " + Math.round(scale * 100) + "%";
+  }
+
+  document.querySelectorAll("[data-w]").forEach(function (b) {
+    b.addEventListener("click", function () { setW(+b.dataset.w); });
+  });
+  document.getElementById("reload").addEventListener("click", function () {
+    frame.src = "index.html?t=" + Date.now();
+  });
+  window.addEventListener("resize", function () {
+    var on = document.querySelector("[data-w].on");
+    setW(on ? +on.dataset.w : 375);
+  });
+
+  setW(375);
+})();
+</script>
+</body>
+</html>
